@@ -18,27 +18,51 @@
 </head>
 
 <body>
-    <form id="partsUsed">
-        <div class="form-group">
-            <label for="partNum">Part #:</label>
-            <input class="form-control" id="partNum" name="partNum" type="number" />
+    <div class="p-3">
+        <div class="card">
+            <div class="card-header">
+                Track Parts Used
+            </div>
+            <div class="card-body p-3">
+                <form id="partsUsed">
+                    <div class="form-group">
+                        <label for="partNum">Part #:</label>
+                        <input class="form-control" id="partNum" name="partNum" type="number" />
+                    </div>
+                    <div class="form-group">
+                        <label for="numUsed">Total Used:</label>
+                        <input class="form-control" id="numUsed" name="numUsed" type="number" />
+                    </div>
+                    <div class="form-group">
+                        <label for="invoiceNum">Invoice #:</label>
+                        <input class="form-control" id="invoiceNum" name="invoiceNum" placeholder="TBD" />
+                    </div>
+                    <button class="btn btn-primary" type="submit">Submit</button>
+                </form>
+            </div>
         </div>
-        <div class="form-group">
-            <label for="numUsed">Total Used:</label>
-            <input class="form-control" id="numUsed" name="numUsed" type="number" />
+    </div>
+
+    <div class="p-3">
+        <div class="card">
+            <div class="card-header">
+                Other Actions
+            </div>
+            <div class="card-body p-3">
+                <button class="btn btn-info" id="generateReport" type="button">Generate Report</button>
+                <button class="btn btn-danger" id="clearAllData" type="button">Clear All Data</button>
+            </div>
         </div>
-        <div class="form-group">
-            <label for="invoiceNum">Invoice #:</label>
-            <input class="form-control" id="invoiceNum" name="invoiceNum" type="number" />
-        </div>
-        <button type="submit" class="btn btn-primary">Submit</button>
-    </form>
+    </div>
 
     <script>
         const params = new URLSearchParams(window.location.search);
 
-        let partNum = params.get('partNum');
         const partNumInput = document.getElementById('partNum');
+        const generateReportBtn = document.getElementById('generateReport');
+        const clearAllDataBtn = document.getElementById('clearAllData');
+
+        let partNum = params.get('partNum');
         if (partNum) {
             partNumInput.value = partNum;
         }
@@ -52,7 +76,7 @@
 
             partNum = partNumInput.value;
             numUsed = numUsedInput.value;
-            invoiceNum = invoiceNumInput.value;
+            invoiceNum = invoiceNumInput.value || 'TBD';
 
             const currentInvoiceStorageText = localStorage.getItem(invoiceNum);
             let invoiceStorage;
@@ -72,6 +96,44 @@
 
             partNumInput.value = '';
             numUsedInput.value = '';
+        });
+
+        generateReportBtn.addEventListener('click', evt => {
+            const csvData = [
+                [`"Invoice #"`, `"Part #"`, `"Total Used"`]
+            ];
+
+            Object.keys(localStorage).forEach(invoiceKey => {
+                const invoiceData = JSON.parse(localStorage.getItem(invoiceKey));
+
+                Object.keys(invoiceData).forEach(partKey => {
+                    const totalPartUsed = invoiceData[partKey];
+
+                    csvData.push([`"${invoiceKey}"`, `"${partKey}"`, `"${totalPartUsed}"`]);
+                });
+            });
+
+            let csvContent = 'data:text/csv;charset=utf-8,';
+            csvData.forEach(row => {
+                csvContent += row.join(',') + '\n';
+            });
+
+            console.log('csvContent:', csvContent);
+
+            // Download the generated CSV content
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", `inventory_report_${new Date().toString('YYYY-MM-DD')}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        });
+
+        clearAllDataBtn.addEventListener('click', evt => {
+            if (confirm('Data will be lost forever. Are you sure?')) {
+                localStorage.clear();
+            }
         });
     </script>
 </body>
