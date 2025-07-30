@@ -125,7 +125,7 @@
 
         generateReportBtn.addEventListener('click', evt => {
             const csvData = [
-                [`"Invoice ID (Optional)"`, `"Purchase Part ID"`, `"Part Name"`, `"Quantity Used"`, `"Date Used"`]
+                [`"Invoice ID (Optional)"`, `"Purchase Part ID"`, `"Quantity Used"`, `"Date Used"`]
             ];
 
             Object.keys(localStorage).forEach(invoiceKey => {
@@ -136,7 +136,7 @@
                     Object.keys(partData).forEach(dateKey => {
                         const totalUsed = partData[dateKey];
 
-                        csvData.push([`"${invoiceKey}"`, `"${partKey}"`, `""`, `"${totalUsed}"`, `"${dateKey}"`]);
+                        csvData.push([`"${invoiceKey}"`, `"${partKey}"`, `"${totalUsed}"`, `"${dateKey}"`]);
                     });
                 });
             });
