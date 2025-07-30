@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>Your Mobile Repairman - Inventory Tracking</title>
+    <meta name="description" content="Free bootstrap template Atlas">
+    <link rel="icon" href="img/logo.png" sizes="32x32" type="image/png">
+    <!-- custom.css -->
+    <link rel="stylesheet" href="css/custom.css">
+    <!-- bootstrap.min.css -->
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <!-- font-awesome -->
+    <link rel="stylesheet" href="font-awesome-4.7.0/css/font-awesome.min.css">
+
+    <!-- AOS -->
+    <link rel="stylesheet" href="css/aos.css">
+</head>
+
+<body>
+    <form id="partsUsed">
+        <div class="form-group">
+            <label for="partNum">Part #:</label>
+            <input class="form-control" id="partNum" name="partNum" type="number" />
+        </div>
+        <div class="form-group">
+            <label for="numUsed">Total Used:</label>
+            <input class="form-control" id="numUsed" name="numUsed" type="number" />
+        </div>
+        <div class="form-group">
+            <label for="invoiceNum">Invoice #:</label>
+            <input class="form-control" id="invoiceNum" name="invoiceNum" type="number" />
+        </div>
+        <button type="submit" class="btn btn-primary">Submit</button>
+    </form>
+
+    <script>
+        const params = new URLSearchParams(window.location.search);
+
+        let partNum = params.get('partNum');
+        const partNumInput = document.getElementById('partNum');
+        if (partNum) {
+            partNumInput.value = partNum;
+        }
+
+        const partsUsedForm = document.getElementById('partsUsed');
+        partsUsedForm.addEventListener('submit', evt => {
+            evt.preventDefault();
+
+            const numUsedInput = document.getElementById('numUsed');
+            const invoiceNumInput = document.getElementById('invoiceNum');
+
+            partNum = partNumInput.value;
+            numUsed = numUsedInput.value;
+            invoiceNum = invoiceNumInput.value;
+
+            const currentInvoiceStorageText = localStorage.getItem(invoiceNum);
+            let invoiceStorage;
+            if (currentInvoiceStorageText) {
+                invoiceStorage = JSON.parse(currentInvoiceStorageText);
+            } else {
+                invoiceStorage = {};
+            }
+
+            if (typeof invoiceStorage[partNum] === 'number') {
+                invoiceStorage[partNum] += parseInt(numUsed);
+            } else {
+                invoiceStorage[partNum] = parseInt(numUsed);
+            }
+
+            localStorage.setItem(invoiceNum, JSON.stringify(invoiceStorage));
+
+            partNumInput.value = '';
+            numUsedInput.value = '';
+        });
+    </script>
+</body>
+
+</html>
