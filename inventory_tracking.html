@@ -156,6 +156,10 @@
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
+
+            if (confirm("Do you want to delete all local data?")) {
+                localStorage.clear();
+            }
         });
 
         clearAllDataBtn.addEventListener('click', evt => {
