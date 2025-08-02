@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <title>Your Mobile Repairman - Mileage Tracking</title>
-    <meta name="description" content="Free bootstrap template Atlas">
+    <meta name="robots" content="noindex">
     <link rel="icon" href="img/logo.png" sizes="32x32" type="image/png">
     <!-- custom.css -->
     <link rel="stylesheet" href="css/custom.css">
@@ -12,9 +12,6 @@
     <link rel="stylesheet" href="css/bootstrap.min.css">
     <!-- font-awesome -->
     <link rel="stylesheet" href="font-awesome-4.7.0/css/font-awesome.min.css">
-
-    <!-- AOS -->
-    <link rel="stylesheet" href="css/aos.css">
 </head>
 
 <body>
@@ -70,6 +67,7 @@
 
     <div class="p-3" id="mileage"></div>
 
+    <script src="js/ymr.js"></script>
     <script>
         const MILEAGE_STORAGE_KEY = "mileage";
 
@@ -80,7 +78,7 @@
         const clearAllDataBtn = document.getElementById('clearAllData');
 
         const currentDate = new Date();
-        const formattedDate = `${currentDate.getFullYear()}-${(currentDate.getMonth() + 1).toString().padStart(2, '0')}-${currentDate.getDate().toString().padStart(2, '0')}`;
+        const formattedDate = formatDate(currentDate, 'YYYY-MM-DD');
 
         dateTraveledInput.value = formattedDate;
 
@@ -99,21 +97,18 @@
                     </tr>
                 </thead>
                 <tbody>`;
-            Object.keys(mileageStorage)
-                .map(uuid => ({ uuid, ...mileageStorage[uuid] }))
-                .sort((a, b) => new Date(a.date) - new Date(b.date))
-                .forEach(mileageData => {
-                    html += `<tr>
-                            <th scope="row">${mileageData.date}</th>
-                            <td>${mileageData.description}</td>
-                            <td>${mileageData.locations}</td>
-                            <td>${mileageData.travelType}</td>
-                            <td>${mileageData.totalMiles} mi</td>
-                            <td>
-                                <button class="btn btn-danger" onclick="javascript:deleteMileageData('${mileageData.uuid}')" type="button">🗑️</button>
-                            </td>
-                        </tr>`;
-                });
+            for (const { date, description, locations, travelType, totalMiles, uuid } of eachMileageRecord()) {
+                html += `<tr>
+                        <th scope="row">${date}</th>
+                        <td>${formatMultiLinesForHtml(description)}</td>
+                        <td>${formatMultiLinesForHtml(locations)}</td>
+                        <td>${travelType}</td>
+                        <td>${totalMiles} mi</td>
+                        <td>
+                            <button class="btn btn-danger" onclick="javascript:deleteMileageData('${uuid}')" type="button">🗑️</button>
+                        </td>
+                    </tr>`;
+            }
             html += `
                 </tbody>
             </table>`;
@@ -144,6 +139,17 @@
                 delete mileageStorage[uuid];
                 localStorage.setItem(MILEAGE_STORAGE_KEY, JSON.stringify(mileageStorage));
                 renderMileage();
+            }
+        }
+
+        function* eachMileageRecord() {
+            const mileageStorage = getMileageStorage();
+            const records = Object.keys(mileageStorage)
+                .map(uuid => ({ uuid, ...mileageStorage[uuid] }))
+                .sort(sortByDate('date'))
+
+            for (const record of records) {
+                yield record;
             }
         }
 
@@ -180,7 +186,7 @@
             const newMileageId = crypto.randomUUID();
 
             const mileageData = {
-                date: dateTraveledInput.value,
+                date: formatDate(new Date(dateTraveledInput.value), 'MM/DD/YYYY'),
                 description,
                 locations,
                 travelType,
@@ -202,39 +208,23 @@
             const csvData = [
                 [`"Date"`, `"Description"`, `"Locations"`, `"Type"`, `"Total Miles"`]
             ];
-            const mileageStorage = getMileageStorage();
 
-            Object.keys(mileageStorage)
-                .map(uuid => ({ uuid, ...mileageStorage[uuid] }))
-                .sort((a, b) => new Date(a.date) - new Date(b.date))
-                .forEach(mileageData => {
-                    csvData.push([`"${mileageData.date}"`, `"${mileageData.description.replace(/\n/g, '\\n').replace(/#/g, '\\u0023')}"`, `"${mileageData.locations.replace(/\n/g, '\\n').replace(/#/g, '\\u0023')}"`, `"${mileageData.travelType}"`, `"${mileageData.totalMiles}"`]);
-                });
+            for (const { date, description, locations, travelType, totalMiles, uuid } of eachMileageRecord()) {
+                csvData.push([date, description, locations, travelType, totalMiles]);
+            }
 
-            let csvContent = 'data:text/csv;charset=utf-8,';
-            csvData.forEach(row => {
-                csvContent += row.join(',') + '\n';
-            });
-
-            console.log('csvContent:', csvContent);
-
-            // Download the generated CSV content
-            const encodedUri = encodeURI(csvContent);
-            const link = document.createElement("a");
-            link.setAttribute("href", encodedUri);
-            link.setAttribute("download", `mileage_report_${formattedDate}.csv`);
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
+            downloadCsv(csvData, `mileage_report_${formattedDate}.csv`);
 
             if (confirm("Do you want to delete all local mileage data?")) {
                 localStorage.setItem(MILEAGE_STORAGE_KEY, '{}');
+                renderMileage();
             }
         });
 
         clearAllDataBtn.addEventListener('click', evt => {
             if (confirm('Mileage data will be lost forever. Are you sure?')) {
                 localStorage.setItem(MILEAGE_STORAGE_KEY, '{}');
+                renderMileage();
             }
         });
 

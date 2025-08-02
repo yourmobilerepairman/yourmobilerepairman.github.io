@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <title>Your Mobile Repairman - Inventory Tracking</title>
-    <meta name="description" content="Free bootstrap template Atlas">
+    <meta name="robots" content="noindex">
     <link rel="icon" href="img/logo.png" sizes="32x32" type="image/png">
     <!-- custom.css -->
     <link rel="stylesheet" href="css/custom.css">
@@ -12,9 +12,6 @@
     <link rel="stylesheet" href="css/bootstrap.min.css">
     <!-- font-awesome -->
     <link rel="stylesheet" href="font-awesome-4.7.0/css/font-awesome.min.css">
-
-    <!-- AOS -->
-    <link rel="stylesheet" href="css/aos.css">
 </head>
 
 <body>
@@ -59,6 +56,9 @@
         </div>
     </div>
 
+    <div class="p-3" id="parts"></div>
+
+    <script src="js/ymr.js"></script>
     <script>
         const INVENTORY_STORAGE_KEY = "inventory";
 
@@ -75,9 +75,41 @@
         }
 
         const currentDate = new Date();
-        const formattedDate = `${currentDate.getFullYear()}-${(currentDate.getMonth() + 1).toString().padStart(2, '0')}-${currentDate.getDate().toString().padStart(2, '0')}`;
+        const formattedDate = formatDate(currentDate, 'YYYY-MM-DD');
 
         dateUsedInput.value = formattedDate;
+
+        const renderParts = () => {
+            const inventoryStorage = getInventoryStorage();
+
+            let html = `<table class="table">
+                <thead>
+                    <tr>
+                        <th scope="col">Invoice ID</th>
+                        <th scope="col">Part ID</th>
+                        <th scope="col">Quantity Used</th>
+                        <th scope="col">Date Used</th>
+                        <th scope="col">Delete</th>
+                    </tr>
+                </thead>
+                <tbody>`;
+            for (const { invoiceId, partId, totalUsed, date } of eachInventoryRecord()) {
+                html += `<tr>
+                        <th scope="row">${invoiceId}</th>
+                        <td>${partId}</td>
+                        <td>${totalUsed}</td>
+                        <td>${date}</td>
+                        <td>
+                            <button class="btn btn-danger" onclick="javascript:deleteInventoryData('${invoiceId}', '${partId}', '${date}')" type="button">🗑️</button>
+                        </td>
+                    </tr>`;
+            }
+            html += `
+                </tbody>
+            </table>`;
+
+            document.getElementById('parts').innerHTML = html;
+        }
 
         const getInventoryStorage = () => {
             const inventoryStorageText = localStorage.getItem(INVENTORY_STORAGE_KEY);
@@ -94,6 +126,63 @@
             }
 
             return inventoryStorage;
+        }
+
+        const deleteInventoryData = (invoiceId, partId, date) => {
+            if (confirm("Are you sure you want to delete this inventory record?")) {
+                const inventoryStorage = getInventoryStorage();
+
+                let invoiceData;
+                if (inventoryStorage[invoiceId]) {
+                    invoiceData = inventoryStorage[invoiceId];
+                } else {
+                    invoiceData = {};
+                }
+
+                let partData;
+                if (invoiceData[partId]) {
+                    partData = invoiceData[partId];
+                } else {
+                    partData = {};
+                }
+
+                delete partData[date];
+
+                invoiceData[partId] = partData;
+                inventoryStorage[invoiceId] = invoiceData;
+                localStorage.setItem(INVENTORY_STORAGE_KEY, JSON.stringify(inventoryStorage));
+
+                renderParts();
+            }
+        }
+
+        function* eachInventoryRecord() {
+            const inventoryStorage = getInventoryStorage();
+            const records = Object
+                .keys(inventoryStorage)
+                .reduce((invoiceAccum, invoiceKey) => {
+                    const invoiceData = inventoryStorage[invoiceKey];
+                    Object.keys(invoiceData).forEach(partKey => {
+                        const partData = invoiceData[partKey];
+                        Object.keys(partData).forEach(dateKey => {
+                            const totalUsed = partData[dateKey];
+
+                            invoiceAccum.push({
+                                invoiceId: invoiceKey,
+                                partId: partKey,
+                                totalUsed,
+                                date: dateKey
+                            });
+                        });
+                    });
+
+                    return invoiceAccum;
+                }, [])
+                .sort(sortByDate('date'));
+
+            for (const record of records) {
+                yield record;
+            }
         }
 
         const partsUsedForm = document.getElementById('partsUsed');
@@ -134,7 +223,7 @@
                 partData = {};
             }
 
-            const selectedDate = dateUsedInput.value;
+            const selectedDate = formatDate(new Date(dateUsedInput.value), 'MM/DD/YYYY');
             if (typeof partData[selectedDate] === 'number') {
                 partData[selectedDate] += quantityUsed;
             } else {
@@ -148,53 +237,34 @@
             quantityUsedInput.value = 0;
 
             alert('Saved');
+            renderParts();
         });
 
         generateReportBtn.addEventListener('click', evt => {
             const csvData = [
                 [`"Invoice ID (Optional)"`, `"Purchase Part ID"`, `"Quantity Used"`, `"Date Used"`]
             ];
-            const inventoryStorage = getInventoryStorage();
 
-            Object.keys(inventoryStorage).forEach(invoiceKey => {
-                const invoiceData = inventoryStorage[invoiceKey];
+            for (const { invoiceId, partId, totalUsed, date } of eachInventoryRecord()) {
+                csvData.push([invoiceId, partId, totalUsed, date]);
+            }
 
-                Object.keys(invoiceData).forEach(partKey => {
-                    const partData = invoiceData[partKey];
-                    Object.keys(partData).forEach(dateKey => {
-                        const totalUsed = partData[dateKey];
-
-                        csvData.push([`"${invoiceKey}"`, `"${partKey}"`, `"${totalUsed}"`, `"${dateKey}"`]);
-                    });
-                });
-            });
-
-            let csvContent = 'data:text/csv;charset=utf-8,';
-            csvData.forEach(row => {
-                csvContent += row.join(',') + '\n';
-            });
-
-            console.log('csvContent:', csvContent);
-
-            // Download the generated CSV content
-            const encodedUri = encodeURI(csvContent);
-            const link = document.createElement("a");
-            link.setAttribute("href", encodedUri);
-            link.setAttribute("download", `inventory_report_${formattedDate}.csv`);
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
+            downloadCsv(csvData, `inventory_report_${formattedDate}.csv`);
 
             if (confirm("Do you want to delete all local inventory data?")) {
                 localStorage.setItem(INVENTORY_STORAGE_KEY, '{}');
+                renderParts();
             }
         });
 
         clearAllDataBtn.addEventListener('click', evt => {
             if (confirm('Inventory data will be lost forever. Are you sure?')) {
                 localStorage.setItem(INVENTORY_STORAGE_KEY, '{}');
+                renderParts();
             }
         });
+
+        renderParts();
     </script>
 </body>
 
