@@ -60,6 +60,8 @@
     </div>
 
     <script>
+        const INVENTORY_STORAGE_KEY = "inventory";
+
         const params = new URLSearchParams(window.location.search);
 
         const partIdInput = document.getElementById('partId');
@@ -77,6 +79,23 @@
 
         dateUsedInput.value = formattedDate;
 
+        const getInventoryStorage = () => {
+            const inventoryStorageText = localStorage.getItem(INVENTORY_STORAGE_KEY);
+            let inventoryStorage;
+            if (inventoryStorageText) {
+                try {
+                    inventoryStorage = JSON.parse(inventoryStorageText);
+                } catch (err) {
+                    console.error('Failed to parse inventory storage:', 'json="', inventoryStorageText, '"; error="', err, '";');
+                    inventoryStorage = {};
+                }
+            } else {
+                inventoryStorage = {};
+            }
+
+            return inventoryStorage;
+        }
+
         const partsUsedForm = document.getElementById('partsUsed');
         partsUsedForm.addEventListener('submit', evt => {
             evt.preventDefault();
@@ -84,26 +103,33 @@
             const quantityUsedInput = document.getElementById('quantityUsed');
             const invoiceIdInput = document.getElementById('invoiceId');
 
-            partId = partIdInput.value;
-            quantityUsed = parseInt(quantityUsedInput.value || '0');
-            invoiceId = invoiceIdInput.value || 'TBD';
+            partId = partIdInput.value.trim();
+
+            const quantityUsed = parseInt(quantityUsedInput.value || '0');
+            const invoiceId = invoiceIdInput.value || 'TBD';
+
+            if (partId === '') {
+                alert('Please enter a part ID');
+                return;
+            }
 
             if (quantityUsed === 0) {
                 alert('Please enter a quantity');
                 return;
             }
 
-            const currentInvoiceStorageText = localStorage.getItem(invoiceId);
-            let invoiceStorage;
-            if (currentInvoiceStorageText) {
-                invoiceStorage = JSON.parse(currentInvoiceStorageText);
+            const inventoryStorage = getInventoryStorage();
+
+            let invoiceData;
+            if (inventoryStorage[invoiceId]) {
+                invoiceData = inventoryStorage[invoiceId];
             } else {
-                invoiceStorage = {};
+                invoiceData = {};
             }
 
             let partData;
-            if (invoiceStorage[partId]) {
-                partData = invoiceStorage[partId];
+            if (invoiceData[partId]) {
+                partData = invoiceData[partId];
             } else {
                 partData = {};
             }
@@ -115,8 +141,9 @@
                 partData[selectedDate] = quantityUsed;
             }
 
-            invoiceStorage[partId] = partData;
-            localStorage.setItem(invoiceId, JSON.stringify(invoiceStorage));
+            invoiceData[partId] = partData;
+            inventoryStorage[invoiceId] = invoiceData;
+            localStorage.setItem(INVENTORY_STORAGE_KEY, JSON.stringify(inventoryStorage));
 
             quantityUsedInput.value = 0;
 
@@ -127,9 +154,10 @@
             const csvData = [
                 [`"Invoice ID (Optional)"`, `"Purchase Part ID"`, `"Quantity Used"`, `"Date Used"`]
             ];
+            const inventoryStorage = getInventoryStorage();
 
-            Object.keys(localStorage).forEach(invoiceKey => {
-                const invoiceData = JSON.parse(localStorage.getItem(invoiceKey));
+            Object.keys(inventoryStorage).forEach(invoiceKey => {
+                const invoiceData = inventoryStorage[invoiceKey];
 
                 Object.keys(invoiceData).forEach(partKey => {
                     const partData = invoiceData[partKey];
@@ -157,14 +185,14 @@
             link.click();
             document.body.removeChild(link);
 
-            if (confirm("Do you want to delete all local data?")) {
-                localStorage.clear();
+            if (confirm("Do you want to delete all local inventory data?")) {
+                localStorage.setItem(INVENTORY_STORAGE_KEY, '{}');
             }
         });
 
         clearAllDataBtn.addEventListener('click', evt => {
-            if (confirm('Data will be lost forever. Are you sure?')) {
-                localStorage.clear();
+            if (confirm('Inventory data will be lost forever. Are you sure?')) {
+                localStorage.setItem(INVENTORY_STORAGE_KEY, '{}');
             }
         });
     </script>
