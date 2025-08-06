@@ -89,9 +89,9 @@
                     <h2 class="font-weight-bold">Contact us today</h2>
                     <p class="my-4">We offer mobile repair service &amp; maintenance including pick-up/drop-off and on-site
                         depending on the job. Contact us today to and we will be pleased to let you know how we can help.</p>
-                    <a href="tel:+19408822630" target="_blank" class="btn my-4 font-weight-bold atlas-cta cta-blue">Call & Text</a>
-                    <a href="mailto:yourmobilerepairman@gmail.com" target="_blank" class="btn my-4 font-weight-bold atlas-cta cta-blue">Email</a>
-                    <a href="https://m.me/701483226386757?source=qr_link_share" target="_blank" class="btn my-4 font-weight-bold atlas-cta cta-blue">Facebook Messenger</a>
+                    <a href="javascript:call()" class="btn my-4 font-weight-bold atlas-cta cta-blue">Call & Text</a>
+                    <a href="javascript:email()" class="btn my-4 font-weight-bold atlas-cta cta-blue">Email</a>
+                    <a href="javascript:facebookMessenger()" class="btn my-4 font-weight-bold atlas-cta cta-blue">Facebook Messenger</a>
                 </div>
             </div>
         </div>
@@ -103,7 +103,7 @@
             <div class="row justify-content-between">
                 <div class="col-md-6 text-white align-self-center text-center text-md-left my-2" id="copyrightText"></div>
                 <div class="col-md-6 align-self-center text-center text-md-right my-2" id="social-media">
-                    <a href="https://www.facebook.com/share/16p8HQxHqx/" target="_blank" class="d-inline-block text-center ml-2">
+                    <a href="javascript:facebookBusinessPage()" class="d-inline-block text-center ml-2">
                         <i class="fa fa-facebook" aria-hidden="true"></i>
                     </a>
                     <!--<a href="#" class="d-inline-block text-center ml-2">
@@ -120,15 +120,15 @@
         </div>
     </div>
 
-    <div class="jumbotron jumbotron-fluid" id="accredidations">
+    <div class="jumbotron jumbotron-fluid" id="accreditations">
         <div class="container">
-            <h4>Accredidations</h4>
+            <h6>Accreditations</h6>
             <div class="row justify-content-between">
-                <a href="https://www.flaticon.com/free-icons/lawn-mower" target="_blank" title="lawn mower icons">Lawn mower icons created by Smashicons - Flaticon</a>
-                <a href="https://www.flaticon.com/free-icons/engine" target="_blank" title="engine icons">Engine icons created by Freepik - Flaticon</a>
-                <a href="https://www.flaticon.com/free-icons/atv" target="_blank" title="atv icons">Atv icons created by Freepik - Flaticon</a>
-                <a href="https://www.flaticon.com/free-icons/motorcycle" target="_blank" title="motorcycle icons">Motorcycle icons created by Freepik - Flaticon</a>
-                <a href="https://www.flaticon.com/free-icons/automobile" target="_blank" title="automobile icons">Automobile icons created by RaftelDesign - Flaticon</a>
+                <a class="small-link" href="https://www.flaticon.com/free-icons/lawn-mower" target="_blank" title="lawn mower icons">Lawn mower icons created by Smashicons - Flaticon</a>
+                <a class="small-link" href="https://www.flaticon.com/free-icons/engine" target="_blank" title="engine icons">Engine icons created by Freepik - Flaticon</a>
+                <a class="small-link" href="https://www.flaticon.com/free-icons/atv" target="_blank" title="atv icons">Atv icons created by Freepik - Flaticon</a>
+                <a class="small-link" href="https://www.flaticon.com/free-icons/motorcycle" target="_blank" title="motorcycle icons">Motorcycle icons created by Freepik - Flaticon</a>
+                <a class="small-link" href="https://www.flaticon.com/free-icons/automobile" target="_blank" title="automobile icons">Automobile icons created by RaftelDesign - Flaticon</a>
             </div>
         </div>
     </div>
@@ -140,6 +140,26 @@
 
         AOS.init({
         });
+
+        const call = () => {
+            gtag('event', 'call_or_text', {});
+            window.location.href = 'tel:+19408822630';
+        }
+
+        const email = () => {
+            gtag('event', 'email', {});
+            window.location.href = 'mailto:yourmobilerepairman@gmail.com';
+        }
+
+        const facebookMessenger = () => {
+            gtag('event', 'facebook_messenger', {});
+            window.open('https://m.me/701483226386757?source=qr_link_share');
+        }
+
+        const facebookBusinessPage = () => {
+            gtag('event', 'facebook_business_page', {});
+            window.open('https://www.facebook.com/share/16p8HQxHqx/');
+        }
     </script>
 </body>
 
