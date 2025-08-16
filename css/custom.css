@@ -35,7 +35,7 @@ button {
 }
 
 .cta-green {
-    background: #00FFAD;
+    background: #2c494b;
     color: #192440;
 }
 
@@ -83,12 +83,12 @@ button {
     max-width: 480px;
 }
 
-#feature-first {
+/* #feature-first {
     background: linear-gradient(168deg, #d2d2d2 55%, #2c494b 0);
-}
+} */
 
 #feature-last {
-    background: #00FFAD;
+    background: #2c494b;
 }
 
 /********** price table **********/
@@ -116,13 +116,13 @@ button {
 }
 
 #contact form {
-    color: #00FFAD;
+    color: #2c494b;
 }
 
 #contact form input,
 #contact form textarea {
     background: transparent;
-    border: 1px solid #00FFAD;
+    border: 1px solid #2c494b;
     color: #ffffff;
 }
 
@@ -147,7 +147,7 @@ button {
 }
 
 #copyright #social-media a:hover {
-    background: #00FFAD;
+    background: #2c494b;
 }
 
 #copyright #social-media a:hover i {

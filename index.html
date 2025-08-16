@@ -89,9 +89,20 @@
                     <h2 class="font-weight-bold">Contact us today</h2>
                     <p class="my-4">We offer mobile repair service &amp; maintenance including pick-up/drop-off and on-site
                         depending on the job. Contact us today to and we will be pleased to let you know how we can help.</p>
-                    <a href="javascript:call()" class="btn my-4 font-weight-bold atlas-cta cta-blue">Call & Text</a>
+                    <ul>
+                        <li>
+                            Call or Text: <a href="javascript:call()">(940) 882-2630</a>
+                        </li>
+                        <li>
+                            Email: <a href="javascript:email()">yourmobilerepairman@gmail.com</a>
+                        </li>
+                        <li>
+                            Facebook Messenger: <a href="javascript:facebookMessenger()">Your Mobile Repairman</a>
+                        </li>
+                    </ul>
+                    <!-- <a href="javascript:call()" class="btn my-4 font-weight-bold atlas-cta cta-blue">Call & Text</a>
                     <a href="javascript:email()" class="btn my-4 font-weight-bold atlas-cta cta-blue">Email</a>
-                    <a href="javascript:facebookMessenger()" class="btn my-4 font-weight-bold atlas-cta cta-blue">Facebook Messenger</a>
+                    <a href="javascript:facebookMessenger()" class="btn my-4 font-weight-bold atlas-cta cta-blue">Facebook Messenger</a> -->
                 </div>
             </div>
         </div>
@@ -103,8 +114,11 @@
             <div class="row justify-content-between">
                 <div class="col-md-6 text-white align-self-center text-center text-md-left my-2" id="copyrightText"></div>
                 <div class="col-md-6 align-self-center text-center text-md-right my-2" id="social-media">
-                    <a href="javascript:facebookBusinessPage()" class="d-inline-block text-center ml-2">
+                    <a href="javascript:facebookBusinessPage()" class="d-inline-block text-center ml-2" title="Facebook">
                         <i class="fa fa-facebook" aria-hidden="true"></i>
+                    </a>
+                    <a href="javascript:nextdoorBusinessPage()" class="d-inline-block text-center ml-2" title="Nextdoor">
+                        <i class="fa fa-home"></i>
                     </a>
                     <!--<a href="#" class="d-inline-block text-center ml-2">
                         <i class="fa fa-twitter" aria-hidden="true"></i>
@@ -159,6 +173,11 @@
         const facebookBusinessPage = () => {
             gtag('event', 'facebook_business_page', {});
             window.open('https://www.facebook.com/share/16p8HQxHqx/');
+        }
+
+        const nextdoorBusinessPage = () => {
+            gtag('event', 'nextdoor_business_page', {});
+            window.open('https://nextdoor.com/pages/your-mobile-repairman-denton-tx');
         }
     </script>
 </body>
