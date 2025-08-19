@@ -9,3 +9,9 @@
 #accreditations {
     padding: 15px;
 }
+
+@media print {
+    #copyright {
+        display: none;
+    }
+}
